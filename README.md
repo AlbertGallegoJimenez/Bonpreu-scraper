@@ -33,7 +33,6 @@
       python3 main.py
       ```
 
-Importante:
 > ⚠️ **Si usas Windows**: reemplaza "python3" por "python".
 
 ## Colaboradores
