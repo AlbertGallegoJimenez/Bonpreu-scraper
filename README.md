@@ -32,8 +32,8 @@
       ``` bash
       python3 main.py
       ```
-
-> ⚠️ **Si usas Windows**: reemplaza "python3" por "python".
+> [!WARNING]
+> Si usas Windows reemplaza "python3" por "python".
 
 ## Colaboradores
 Este repositorio ha sido desarrollado por:
