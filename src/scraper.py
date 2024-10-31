@@ -46,9 +46,10 @@ class BonpreuScraper():
             print(f"Error occurred while loading the page: {e}")
         finally:
             driver.quit()
+            
         return
     
-    def get_categories_url(self) -> str:
+    def get_categories_section_url(self) -> str:
         """
         Retrieves the URL of the categories section from the navigation menu.
         The categories web page is accessed through the Supermercat section.
@@ -59,6 +60,7 @@ class BonpreuScraper():
         try:
             # Get the main page soup
             self.main_soup = self._get_soup(self.base_url)
+            
             # Get the navigation menus from the main page where the Supermercat is located
             nav_menu = self.main_soup.find_all('ul', {
                 'id': 'nav-menu',
@@ -66,22 +68,25 @@ class BonpreuScraper():
                 'role': 'menu',
                 'class': 'sc-1w5m3ly-0 aIFnR'
             })
+            
             # As the previous find_all returns a list,
             # we need to get the element where "Supermercat" is located
             if isinstance(nav_menu, list):
                 for ul in nav_menu:
                     if ul.find('li', string='Supermercat'):
                         # Get the url of the Supermercat page
-                        categories = ul.find('li', string='Supermercat')
-                        self.categories_url = self.base_url + categories.find('a')['href']
-                        return self.categories_url
+                        categories_tag = ul.find('li', string='Supermercat')
+                        self.categories_section_url = self.base_url + categories_tag.find('a')['href']
+                        
+                        return self.categories_section_url
+                    
             else:
                 print("Error occurred while getting the categories section URL: nav_menu is not a list.")
                 return
         except Exception as e:
             print(f"Error occurred while getting the categories section URL: {e}")
+            
             return
-        return
     
     def get_categories(self) -> str:
         """
@@ -89,18 +94,24 @@ class BonpreuScraper():
         """
         try:
             # Get the Supermercat page soup
-            self.cat_soup = self._get_soup(self.categories_url)
+            self.categories_soup = self._get_soup(self.categories_section_url)
             
             # Get the div tag containing the categories menu
-            self.categories = self.cat_soup .find('div', {
+            self.categories_menu = self.categories_soup .find('div', {
                 'class': 'sc-1wz1hmv-0 cmTtoc'
             })
             
-        
+            # Create a dictionary to store the categories and their URLs
+            self.categories_dict = {}
+            for cat in self.categories_menu.find_all('a'):
+                self.categories_dict[cat.text] = self.base_url + cat["href"]
+                
+            return self.categories_dict
+                
         except Exception as e:
             print(f"Error occurred while getting the categories: {e}")
+            
             return
-        return
     
     
 
