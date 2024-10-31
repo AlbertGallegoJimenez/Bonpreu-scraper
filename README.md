@@ -30,6 +30,7 @@
    
 2. Ejecutar el **script principal desde consola**(``main.py``):
       ``` bash
+      cd src
       python3 main.py
       ```
 > [!WARNING]
