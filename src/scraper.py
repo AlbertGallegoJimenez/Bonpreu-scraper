@@ -248,3 +248,54 @@ class BonpreuScraper():
             print(f"Error occurred while getting the categories: {e}")
             return
 
+    def get_product_info(self, url):
+        """
+        Extracts product information from the given URL.
+        
+        Args:
+            url (str): URL of the category page.
+            
+        Returns:
+            tuple: Tuple of lists with: names and prices of the products.
+        """
+        # Get the page content of the category
+        category_page = self._parse_html(url, dynamic_content=False)
+        
+        # Get the soup of the category page
+        category_soup = self._get_soup(category_page)
+        
+        # Get the grid where the products are located
+        product_grid = category_soup.find('div', {
+            'class': 'sc-1wz1hmv-0 cVvZzF'
+        })
+        
+        # Create lists to store the product names and prices
+        product_names = []
+        product_prices = []
+        product_urls = []
+        
+        # Get the product names and prices
+        for product in product_grid.find_all("div", {'class': 'product-card-container'}):
+            # Get the product name
+            try:
+                product_name = product.find('a')["aria-label"]
+            except:
+                product_name = "N/A"
+            # Get the product price
+            try:
+                product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'}).text
+                # Adapt the price format
+                product_price = float(product_price.replace('\xa0€', '').replace(',', '.'))
+            except:
+                product_price = "N/A"
+            # Get the product URL
+            try:
+                product_url = self.base_url + product.find('a')['href']
+            except:
+                product_url = "N/A"
+            # Append the product info to the lists
+            product_names.append(product_name)
+            product_prices.append(product_price)
+            product_urls.append(product_url)
+        
+        return product_names, product_prices, product_urls
