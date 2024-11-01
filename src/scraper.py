@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-import time
 
 class BonpreuScraper():
     """
@@ -9,9 +8,19 @@ class BonpreuScraper():
     Attributes:
         base_url (str): The main URL of the Bonpreu website.
     """
+    # Default categories to scrape
+    default_categories = [
+        "Frescos", "Alimentació", "Begudes",
+        "Làctics i ous", "Celler"
+        ]
+    
     def __init__(self, base_url, categories=None):
         self.base_url = base_url
-        self.categories = categories
+              
+    @classmethod
+    def categories(cls):
+        """Method to get the categories."""
+        return cls.default_categories
         
     def _get_soup(self, url: str = None) -> BeautifulSoup:
         """
@@ -46,7 +55,7 @@ class BonpreuScraper():
             
         return
     
-    def get_categories_section_url(self) -> str:
+    def _get_categories_section_url(self) -> str:
         """
         Retrieves the URL of the categories section from the navigation menu.
         The categories web page is accessed through the Supermercat section.
@@ -73,9 +82,9 @@ class BonpreuScraper():
                     if ul.find('li', string='Supermercat'):
                         # Get the url of the Supermercat page
                         categories_tag = ul.find('li', string='Supermercat')
-                        self.categories_section_url = self.base_url + categories_tag.find('a')['href']
+                        categories_section_url = self.base_url + categories_tag.find('a')['href']
                         
-                        return self.categories_section_url
+                        return categories_section_url
                     
             else:
                 print("Error occurred while getting the categories section URL: nav_menu is not a list.")
@@ -145,37 +154,49 @@ class BonpreuScraper():
         
         return clean_dict
     
-    def get_categories(self) -> str:
+    def get_categories_url(self, categories=None) -> str:
         """
-        Retrieves the individual URLs of the categories of products available on the Supermercat page.
+        Extracts categories and their URLs from the categories menu.
+
+        Returns:
+            list: A list of tuples containing category names and their nested subcategories.
         """
-        try:
-            # Get the Supermercat page soup
-            self.categories_soup = self._get_soup(self.categories_section_url)
+        if not categories:
+            raise ValueError("Categories must be provided. Use BonpreuScraper.categories() to get the default categories.")
+        elif not isinstance(categories, list):
+            categories = [categories]
             
+        try:
+            # Get the URL of the categories section
+            self.categories_url = self._get_categories_section_url()
+            # Get the soup of the categories page
+            self.categories_soup = self._get_soup(self.categories_url)
             # Get the div tag containing the categories menu
             self.categories_menu = self.categories_soup.find('div', {
                 'class': 'sc-1wz1hmv-0 cmTtoc'
             })
-            
-            # Create a dictionary to store the categories and their URLs
+
+            # Create a list to store the categories and their URLs
             self.categories_list = []
-            for cat in self.categories_menu.find_all('a'):
+            for category in self.categories_menu.find_all('a'):
+                # Filter the categories to scrape
+                if category.text not in categories:
+                    continue
                 # Get the category name and its URL
-                cat_name, cat_url = cat.text, self.base_url + cat["href"]
+                category_name = category.text
+                category_url = self.base_url + category["href"]
+                
                 # Call the function to get the nested subcategories
-                cat_dict = self._iterate_nested_subcategories(cat_name, cat_url)
+                nested_subcategories = self._iterate_nested_subcategories(category_name, category_url)
+                
                 # Clean the nested subcategories dictionary
-                cat_dict = self._clean_output_subcategories(cat_dict)
+                cleaned_subcategories = self._clean_output_subcategories(nested_subcategories)
+                
                 # Append the category name and its URL to the list
-                self.categories_list.append((cat_name, cat_dict))
-                
+                self.categories_list.append((category_name, cleaned_subcategories))
+
             return self.categories_list
-                
+
         except Exception as e:
             print(f"Error occurred while getting the categories: {e}")
-            
             return
-    
-    
-
