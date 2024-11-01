@@ -1,5 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
 
 class BonpreuScraper():
     """
@@ -21,38 +24,75 @@ class BonpreuScraper():
     def categories(cls):
         """Method to get the categories."""
         return cls.default_categories
-        
-    def _get_soup(self, url: str = None) -> BeautifulSoup:
+    
+    def _parse_html(self, url: str = None, dynamic_content = False) -> str:
         """
-        Loads the page content and parses it with BeautifulSoup.
+        Parses the HTML content of the page.
         
         Args:
             url (str): URL of the page to scrape. If None, uses the base URL.
+            dynamic_content (bool): If True, uses Selenium to scrape the page.
+            
+        Returns:
+            str: HTML content of the page.
+        """
+        try:
+            if dynamic_content:
+                # Sets the driver
+                driver = webdriver.Chrome()
+                # Opens the URL
+                driver.get(url)
+                # Scrolls to the bottom of the page to load all the content
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                # Waits for the page to load
+                time.sleep(2)
+                # Gets the page source
+                page_source = driver.page_source
+                # Closes the driver
+                driver.quit()
+            
+                return page_source
+            
+            else:
+            
+                # Define the headers to avoid being blocked
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Connection": "keep-alive"
+                }
+                
+                # Use requests to get the page content
+                response = requests.get(url, headers=headers)
+                #time.sleep(2) # Wait for page to load
+                
+                return response.text
+        
+        except Exception as e:
+            print(f"Error occurred while loading the page: {e}")
+            
+        return
+        
+    def _get_soup(self, html_page) -> BeautifulSoup:
+        """
+        Creates a BeautifulSoup object for the webpage passed.
+        
+        Args:
+            html_page (str): HTML content of the page.
             
         Returns:
             BeautifulSoup: Parsed HTML content of the page.
         """
         try:
-            # Define the headers to avoid being blocked
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Connection": "keep-alive"
-            }
-            
-            # Use requests to get the page content
-            response = requests.get(url, headers=headers)
-            #time.sleep(2) # Wait for page to load
-            
-            # Parse page with BeautifulSoup
-            soup = BeautifulSoup(response.text, "html.parser")
+            # Create a BeautifulSoup object
+            soup = BeautifulSoup(html_page, 'html.parser')
             
             return soup
         
         except Exception as e:
-            print(f"Error occurred while loading the page: {e}")
-            
+            print(f"Error occurred while parsing the HTML: {e}")
+        
         return
     
     def _get_categories_section_url(self) -> str:
@@ -64,11 +104,14 @@ class BonpreuScraper():
             str: URL of the categories page, if found. Otherwise, None.
         """
         try:
+            # Get the main page content
+            main_page = self._parse_html(self.base_url, dynamic_content=False)
+            
             # Get the main page soup
-            self.main_soup = self._get_soup(self.base_url)
+            main_soup = self._get_soup(main_page)
             
             # Get the navigation menus from the main page where the Supermercat is located
-            nav_menu = self.main_soup.find_all('ul', {
+            nav_menu = main_soup.find_all('ul', {
                 'id': 'nav-menu',
                 'aria-labelledby': 'nav-menu-button',
                 'role': 'menu',
@@ -107,8 +150,10 @@ class BonpreuScraper():
         """
         # Create a dictionary to store the subcategories and their URLs
         subcat_dict = {}
+        # Get the html content of the subcategory page
+        subcat_page = self._parse_html(subcat_url, dynamic_content=False)
         # Get the soup of the subcategory page
-        subcat_soup = self._get_soup(subcat_url)
+        subcat_soup = self._get_soup(subcat_page)
         # Get the div tag containing the subcategories menu
         subcat_menu = subcat_soup.find('div', {
         'class': 'sc-1wz1hmv-0 cmTtoc'
@@ -169,15 +214,17 @@ class BonpreuScraper():
         try:
             # Get the URL of the categories section
             self.categories_url = self._get_categories_section_url()
+            # Get the page content of the categories section
+            self.categories_page = self._parse_html(self.categories_url, dynamic_content=False)
             # Get the soup of the categories page
-            self.categories_soup = self._get_soup(self.categories_url)
+            self.categories_soup = self._get_soup(self.categories_page)
             # Get the div tag containing the categories menu
             self.categories_menu = self.categories_soup.find('div', {
                 'class': 'sc-1wz1hmv-0 cmTtoc'
             })
 
-            # Create a list to store the categories and their URLs
-            self.categories_list = []
+            # Create a dict to store the categories and their URLs
+            self.categories_dict = {}
             for category in self.categories_menu.find_all('a'):
                 # Filter the categories to scrape
                 if category.text not in categories:
@@ -192,11 +239,12 @@ class BonpreuScraper():
                 # Clean the nested subcategories dictionary
                 cleaned_subcategories = self._clean_output_subcategories(nested_subcategories)
                 
-                # Append the category name and its URL to the list
-                self.categories_list.append((category_name, cleaned_subcategories))
+                # Append the category name and its URL to the dict
+                self.categories_dict[category_name] = cleaned_subcategories
 
-            return self.categories_list
+            return self.categories_dict
 
         except Exception as e:
             print(f"Error occurred while getting the categories: {e}")
             return
+
