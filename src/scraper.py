@@ -3,6 +3,8 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
+from itertools import chain
+import numpy as np
 
 class BonpreuScraper():
     """
@@ -248,6 +250,22 @@ class BonpreuScraper():
             print(f"Error occurred while getting the categories: {e}")
             return
 
+    def extract_nested_values(self, d):
+        """
+        Extracts the nested values from a dictionary.
+        Ref: https://www.geeksforgeeks.org/python-get-all-values-from-nested-dictionary/
+        
+        Args:
+            d (dict): Dictionary to extract the values from.
+            
+        Returns:
+            list: List of the extracted values.
+        """
+        return list(chain.from_iterable(
+            [self.extract_nested_values(v) if isinstance(v, dict) else [v]
+            if isinstance(v, str) else v for v in d.values()]
+        ))
+
     def get_product_info(self, url):
         """
         Extracts product information from the given URL.
@@ -264,35 +282,30 @@ class BonpreuScraper():
         # Get the soup of the category page
         category_soup = self._get_soup(category_page)
         
-        # Get the grid where the products are located
-        product_grid = category_soup.find('div', {
-            'class': 'sc-1wz1hmv-0 cVvZzF'
-        })
-        
         # Create lists to store the product names and prices
         product_names = []
         product_prices = []
         product_urls = []
         
         # Get the product names and prices
-        for product in product_grid.find_all("div", {'class': 'product-card-container'}):
+        for product in category_soup.find_all("div", {'class': 'product-card-container'}): # Loop through the products
             # Get the product name
             try:
                 product_name = product.find('a')["aria-label"]
             except:
-                product_name = "N/A"
+                product_name = np.nan
             # Get the product price
             try:
                 product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'}).text
                 # Adapt the price format
                 product_price = float(product_price.replace('\xa0€', '').replace(',', '.'))
             except:
-                product_price = "N/A"
+                product_price = np.nan
             # Get the product URL
             try:
                 product_url = self.base_url + product.find('a')['href']
             except:
-                product_url = "N/A"
+                product_url = np.nan
             # Append the product info to the lists
             product_names.append(product_name)
             product_prices.append(product_price)
