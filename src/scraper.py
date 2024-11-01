@@ -265,50 +265,54 @@ class BonpreuScraper():
             [self.extract_nested_values(v) if isinstance(v, dict) else [v]
             if isinstance(v, str) else v for v in d.values()]
         ))
+        
+    def _convert_price(self, price_str):
+        """
+        Converts the price string to a float.
+        
+        Args:
+            price_str (str): Price string to convert.
+            
+            Returns:
+                float: Price as a float.
+        """
+        
+        return float(price_str.replace('\xa0€', '').replace(',', '.'))
 
     def get_product_info(self, url):
         """
         Extracts product information from the given URL.
-        
+
         Args:
             url (str): URL of the category page.
-            
+
         Returns:
-            tuple: Tuple of lists with: names and prices of the products.
+            tuple: Tuple of lists containing the names, prices, and URLs of the products.
         """
-        # Get the page content of the category
+        # Get the parsed HTML content
         category_page = self._parse_html(url, dynamic_content=False)
-        
-        # Get the soup of the category page
         category_soup = self._get_soup(category_page)
-        
-        # Create lists to store the product names and prices
-        product_names = []
-        product_prices = []
-        product_urls = []
-        
-        # Get the product names and prices
-        for product in category_soup.find_all("div", {'class': 'product-card-container'}): # Loop through the products
-            # Get the product name
-            try:
-                product_name = product.find('a')["aria-label"]
-            except:
-                product_name = np.nan
-            # Get the product price
-            try:
-                product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'}).text
-                # Adapt the price format
-                product_price = float(product_price.replace('\xa0€', '').replace(',', '.'))
-            except:
-                product_price = np.nan
-            # Get the product URL
-            try:
-                product_url = self.base_url + product.find('a')['href']
-            except:
-                product_url = np.nan
-            # Append the product info to the lists
+
+        # Initialize lists for product details
+        product_names, product_prices, product_urls = [], [], []
+
+        # Extract product details from each product card
+        for product in category_soup.find_all("div", {'class': 'product-card-container'}):
+            
+            # Extract product name
+            product_name = product.find('a').get("aria-label", np.nan)
+
+            # Extract product price
+            product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'})
+            product_price = self._convert_price(product_price.text) if product_price else np.nan
+
+            # Extract product URL
+            product_url = product.find('a').get('href', None)
+            product_url = self.base_url + product_url if product_url else np.nan
+
+            # Append extracted details to lists
             product_names.append(product_name)
             product_prices.append(product_price)
             product_urls.append(product_url)
-        
+
         return product_names, product_prices, product_urls
