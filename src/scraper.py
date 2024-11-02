@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import time
 import unicodedata
 import numpy as np
@@ -45,14 +46,32 @@ class BonpreuScraper():
         """
         try:
             if dynamic_content:
+                # Set the options for the Chrome driver
+                options = webdriver.ChromeOptions()
+                options.add_argument("--User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36")
+                options.add_argument("--headless")
+                options.add_argument("--disable-blink-features=AutomationControlled")
+                options.add_argument("disable-gpu")
                 # Sets the driver
-                driver = webdriver.Chrome()
+                driver = webdriver.Chrome(options=options)
                 # Opens the URL
                 driver.get(url)
-                # Scrolls to the bottom of the page to load all the content
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                # Waits for the page to load
-                time.sleep(2)
+                # Get the height of the page
+                last_height = driver.execute_script("return document.body.scrollHeight")
+                
+                while True:
+                    # Scrolls to the bottom of the page
+                    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    # Waits for the page to load
+                    time.sleep(2)
+                    # Gets the new height of the page
+                    new_height = driver.execute_script("return document.body.scrollHeight")
+                    
+                    if new_height == last_height:
+                        break
+                    
+                    last_height = new_height
+                    
                 # Gets the page source
                 page_source = driver.page_source
                 # Closes the driver
@@ -151,6 +170,7 @@ class BonpreuScraper():
         Returns:
             list: List containing the subcategories.
         """
+        print(f"Getting subcategories for the {self.category} category...")
         # Get the URL of the categories section
         categories_url = self._get_categories_section_url()
         # Get the page content of the categories section
@@ -178,6 +198,9 @@ class BonpreuScraper():
         """
         Helper function to extract subcategory links at the given URL.
         If subcategories exist, returns a list of (text, full_url) tuples; otherwise, returns None.
+        
+        Args:
+            url (str): URL of the subcategory page.
         """
         # Get the html content of the subcategory page
         subcat_page = self._parse_html(url, dynamic_content=False)
@@ -255,7 +278,20 @@ class BonpreuScraper():
                 float: Price as a float.
         """
         return float(price_str.replace('\xa0€', '').replace(',', '.'))
-
+    
+    def _normalize_text(self, text) -> str:
+        """
+        Normalizes the text by removing special characters and converting to lowercase.
+        
+        Args:
+            text (str): Text to normalize.
+            
+        Returns:
+            str: Normalized text.
+        """
+        
+        return unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8') if text else None
+    
     def get_product_info(self, subcategory) -> tuple:
         """
         Extracts all products and their information from the given subcategory.
@@ -266,14 +302,25 @@ class BonpreuScraper():
         """
         if isinstance(subcategory, list):
             raise ValueError("Please, select a single subcategory to avoid saturating the server.")
-                
+        
+        print(f"Extracting products from the {self.category}>{subcategory} subcategory...")
         # First, get the list of URLs
         subcat_structure_list = self._extract_subcat_structure(subcategory)
         url_list = [subcat_structure[-1] for subcat_structure in subcat_structure_list]
         
-        # Initialize lists for product details we want to save
-        cat, subcat_1, subcat_2, subcat_3, subcat_4, product_names, product_prices, product_urls = [], [], [], [], [], [], [], []
-        
+        # Initialize a dict to store the product information
+        data = {
+            'Category': [],
+            'Subcategory_1': [],
+            'Subcategory_2': [],
+            'Subcategory_3': [],
+            'Subcategory_4': [],
+            'Product Name': [],
+            'Price': [],
+            'Quantity (kg|L)': [],
+            'URL': []
+            }
+                
         # Iterate through the URLs to get the product details
         for i, url in enumerate(url_list):
                         
@@ -290,24 +337,29 @@ class BonpreuScraper():
                 # Extract product price
                 product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'})
                 product_price = self._convert_price(product_price.text) if product_price else np.nan
+                
+                # Extract product quantity
+                product_quantity = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1sjeki5-0 asqfi'})
+                product_quantity = product_quantity.text if product_quantity else None
 
                 # Extract product URL
                 product_url = product.find('a').get('href', None)
                 product_url = self.base_url + product_url if product_url else None
 
                 # Append extracted details to lists
-                cat = subcat_structure_list[i][0]
-                subcat_1 = subcat_structure_list[i][1]
-                subcat_2 = subcat_structure_list[i][2]
-                subcat_3 = subcat_structure_list[i][3]
-                subcat_4 = subcat_structure_list[i][4]
-                product_names.append(product_name)
-                product_prices.append(product_price)
-                product_urls.append(product_url)
+                data['Category'].append(self._normalize_text(subcat_structure_list[i][0]))
+                data['Subcategory_1'].append(self._normalize_text(subcat_structure_list[i][1]))
+                data['Subcategory_2'].append(self._normalize_text(subcat_structure_list[i][2]))
+                data['Subcategory_3'].append(self._normalize_text(subcat_structure_list[i][3]))
+                data['Subcategory_4'].append(self._normalize_text(subcat_structure_list[i][4]))
+                data['Product Name'].append(self._normalize_text(product_name))
+                data['Price'].append(product_price)
+                data['Quantity (kg|L)'].append(product_quantity)
+                data['URL'].append(product_url)
         
         # Save the product information to a CSV file
-        print(f"Extracted {len(product_names)} products from the {self.category}>{subcategory} subcategory.")
-        return self._save_csv((cat, subcat_1, subcat_2, subcat_3, subcat_4, product_names, product_prices, product_urls))
+        print(f"Extracted {len(data['Product Name'])} products from the {self.category}>{subcategory} subcategory.")
+        return self._save_csv(data)
             
     def _save_csv(self, product_info):
         """
@@ -318,26 +370,18 @@ class BonpreuScraper():
         """
         
         # Create a DataFrame from the product information
-        product_df = pd.DataFrame({
-            'Category': product_info[0],
-            'Subcategory_1': product_info[1],
-            'Subcategory_2': product_info[2],
-            'Subcategory_3': product_info[3],
-            'Subcategory_4': product_info[4],
-            'Product Name': product_info[5],
-            'Price': product_info[6],
-            'URL': product_info[7]
-        })
+        product_df = pd.DataFrame(product_info)
         
         # Create the filename based on the category + subcategory_1 + timestamp
         # Example: Frescos_Carns_20210901_120000.csv
         
         # First, check that category and subcategory_1 do not contain spaces and special characters
-        category = product_info[0].replace(' ', '_').replace('/', '_')
-        subcategory_1 = product_info[1].replace(' ', '_').replace('/', '_')
+        category = product_df['Category'][0].replace(' ', '_')
+        subcategory_1 = product_df['Subcategory_1'][0].replace(' ', '_')
+        
         # Remove special characters
-        category = unicodedata.normalize('NFKD', category).encode('ascii', 'ignore').decode('utf-8')
-        subcategory_1 = unicodedata.normalize('NFKD', subcategory_1).encode('ascii', 'ignore').decode('utf-8')
+        category = self._normalize_text(category)
+        subcategory_1 = self._normalize_text(subcategory_1)
         
         # Get the current timestamp
         timestamp = time.strftime("%Y%m%d_%H%M%S")
