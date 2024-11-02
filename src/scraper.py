@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 import time
 import unicodedata
 import numpy as np
@@ -80,7 +79,6 @@ class BonpreuScraper():
                 return page_source
             
             else:
-            
                 # Define the headers to avoid being blocked
                 headers = {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
