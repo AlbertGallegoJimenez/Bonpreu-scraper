@@ -88,8 +88,7 @@ class BonpreuScraper():
                 }
                 
                 # Use requests to get the page content
-                response = requests.get(url, headers=headers)
-                #time.sleep(2) # Wait for page to load
+                response = requests.get(url, headers=headers, timeout=2)
                 
                 return response.text
         
