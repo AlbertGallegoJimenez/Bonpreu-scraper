@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup
 import requests
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 import time
-from itertools import chain
+import unicodedata
 import numpy as np
+import pandas as pd
+from pathlib import Path
 
 class BonpreuScraper():
     """
@@ -142,132 +143,108 @@ class BonpreuScraper():
             print(f"Error occurred while getting the categories section URL: {e}")
             
             return
-        
-    def _iterate_nested_subcategories(self, subcat_name, subcat_url) -> dict:
+
+    def get_subcategories_names(self) -> list:
         """
-        Iterates through the nested subcategories to get the URLs of the products.
+        Gets the names of subcategories of the selected category.
         
-        Args:
-            subcat_name (str): Name of the subcategory.
-            subcat_url (str): URL of the subcategory.
-            
         Returns:
-            dict: Dictionary containing the subcategories and their URLs.
+            list: List containing the subcategories.
         """
-        # Create a dictionary to store the subcategories and their URLs
-        subcat_dict = {}
+        # Get the URL of the categories section
+        categories_url = self._get_categories_section_url()
+        # Get the page content of the categories section
+        categories_page = self._parse_html(categories_url, dynamic_content=False)
+        # Get the soup of the categories page
+        categories_soup = self._get_soup(categories_page)
+        # Get the div tag containing the categories menu
+        categories_menu = categories_soup.find('div', {
+            'class': 'sc-1wz1hmv-0 cmTtoc'
+        })
+        # Filter the categories menu to get the desired category
+        category = [cat for cat in categories_menu.find_all('a') if cat.text == self.category][0]
         # Get the html content of the subcategory page
-        subcat_page = self._parse_html(subcat_url, dynamic_content=False)
+        subcat_page = self._parse_html(self.base_url + category["href"], dynamic_content=False)
+        # Get the soup of the subcategory page
+        subcat_soup = self._get_soup(subcat_page)
+        # Get the div tag containing the subcategories menu
+        self.subcat_menu = subcat_soup.find('div', {
+        'class': 'sc-1wz1hmv-0 cmTtoc'
+        })
+        
+        return [subcat.text for subcat in self.subcat_menu.find_all('a')]
+
+    def _extract_subcategory_links(self, url):
+        """
+        Helper function to extract subcategory links at the given URL.
+        If subcategories exist, returns a list of (text, full_url) tuples; otherwise, returns None.
+        """
+        # Get the html content of the subcategory page
+        subcat_page = self._parse_html(url, dynamic_content=False)
         # Get the soup of the subcategory page
         subcat_soup = self._get_soup(subcat_page)
         # Get the div tag containing the subcategories menu
         subcat_menu = subcat_soup.find('div', {
         'class': 'sc-1wz1hmv-0 cmTtoc'
         })
-        if subcat_menu: # Check if the subcategory page has a subcategory menu
-            subsubcats = subcat_menu.find_all('a')
-            for subsubcat in subsubcats:
-                subsubcat_name = subsubcat.text.strip()
-                subsubcat_url = self.base_url + subsubcat["href"]
-                # Recursively iterate through the subcategories
-                subcat_dict[subsubcat_name] = self._iterate_nested_subcategories(subsubcat_name, subsubcat_url)
-        else:
-            # Store the subcategory URL
-            subcat_dict[subcat_name] = subcat_url
-
-        return subcat_dict
+        
+        return [(a.text, self.base_url + a['href']) for a in subcat_menu.find_all('a')] if subcat_menu else None
     
-    def _clean_output_subcategories(self, subcat_dict) -> dict:
+    def _extract_subcat_structure(self, subcategory) -> list:
         """
-        Cleans the nested subcategories dictionary to remove duplicate entries.
+        Extracts the hierarchical structure of the subcategories and their URLs.
+        The structure of the returned list is as follows:
+            [
+                category, subcategory_1, subcategory_2, subcategory_3, subcategory_4, url, 
+                ...
+            ]
+        When a subcategory does not have subcategories, the list will contain None until the URL.
         
         Args:
-            subcat_dict (dict): Dictionary containing the nested subcategories.
+            subcategory (str): Name of the subcategory.
+        
+        Returns:
+            list: List of URLs of the subcategories.
+        """
+        # Set the first two levels of the hierarchy
+        # Level 0 and level 1 are the category and subcategory, respectively defined by the user
+        level_0_text = self.category
+        level_1_text = subcategory
+
+        # Get the level_1 subcategory object
+        level_1_subcat = [subcat for subcat in self.subcat_menu() if subcat.text == level_1_text][0]
+        level_1_url = self.base_url + level_1_subcat.find('a')['href']
+
+        # Initialize the list to store the subcategories
+        subcat_list = []
+
+        # Extract the subcategories of level 2
+        level_2_subcats = self._extract_subcategory_links(level_1_url)
+
+        for level_2_text, url_2 in level_2_subcats:
+            # Extract the subcategories of level 3
+            level_3_subcats = self._extract_subcategory_links(url_2)
+
+            if level_3_subcats: # If there are subcategories of level 3
+                
+                for level_3_text, url_3 in level_3_subcats:
+                    # Extract the subcategories of level 4
+                    level_4_subcats = self._extract_subcategory_links(url_3)
+
+                    if level_4_subcats: # If there are subcategories of level 4
+                        
+                        for level_4_text, url_4 in level_4_subcats:
+                            subcat_list.append([level_0_text, level_1_text, level_2_text, level_3_text, level_4_text, url_4])
+                    
+                    else: # Without level 4
+                        subcat_list.append([level_0_text, level_1_text, level_2_text, level_3_text, None, url_3])
             
-        Returns:
-            dict: Cleaned dictionary with the subcategories and their URLs.
-        """
-        # Create a dictionary to store the cleaned subcategories
-        clean_dict = {}
+            else: # Without level 3
+                subcat_list.append([level_0_text, level_1_text, level_2_text, None, None, url_2])
         
-        for key, value in subcat_dict.items():
-            if isinstance(value, dict):
-                # Recursively clean the nested subcategories
-                cleaned_value = self._clean_output_subcategories(value)
-                # Check if the cleaned subcategory is a single URL
-                if len(cleaned_value) == 1 and key in cleaned_value:
-                    clean_dict[key] = cleaned_value[key] # Assign the URL directly
-                else:
-                    clean_dict[key] = cleaned_value  # Assign the cleaned subcategory
-            else:
-                # Store the subcategory URL
-                clean_dict[key] = value
+        return subcat_list
         
-        return clean_dict
-    
-    def get_categories_url(self) -> str:
-        """
-        Extracts categories and their URLs from the categories menu.
-
-        Returns:
-            list: A list of tuples containing category names and their nested subcategories.
-        """
-        try:
-            # Get the URL of the categories section
-            self.categories_url = self._get_categories_section_url()
-            # Get the page content of the categories section
-            self.categories_page = self._parse_html(self.categories_url, dynamic_content=False)
-            # Get the soup of the categories page
-            self.categories_soup = self._get_soup(self.categories_page)
-            # Get the div tag containing the categories menu
-            self.categories_menu = self.categories_soup.find('div', {
-                'class': 'sc-1wz1hmv-0 cmTtoc'
-            })
-
-            # Create a dict to store the categories and their URLs
-            self.categories_dict = {}
-            for category in self.categories_menu.find_all('a'):
-                # Filter the categories to scrape
-                if category.text != self.category:
-                    continue
-                # Get the category name and its URL
-                category_name = category.text
-                category_url = self.base_url + category["href"]
-                
-                # Call the function to get the nested subcategories
-                nested_subcategories = self._iterate_nested_subcategories(category_name, category_url)
-                
-                # Clean the nested subcategories dictionary
-                cleaned_subcategories = self._clean_output_subcategories(nested_subcategories)
-                
-                # Append the category name and its URL to the dict
-                self.categories_dict[category_name] = cleaned_subcategories
-
-            return self.categories_dict
-
-        except Exception as e:
-            print(f"Error occurred while getting the categories: {e}")
-            return
-
-
-
-    def extract_nested_values(self, d):
-        """
-        Extracts the nested values from a dictionary.
-        Ref: https://www.geeksforgeeks.org/python-get-all-values-from-nested-dictionary/
-        
-        Args:
-            d (dict): Dictionary to extract the values from.
-            
-        Returns:
-            list: List of the extracted values.
-        """
-        return list(chain.from_iterable(
-            [self.extract_nested_values(v) if isinstance(v, dict) else [v]
-            if isinstance(v, str) else v for v in d.values()]
-        ))
-        
-    def _convert_price(self, price_str):
+    def _convert_price(self, price_str) -> float:
         """
         Converts the price string to a float.
         
@@ -277,43 +254,100 @@ class BonpreuScraper():
             Returns:
                 float: Price as a float.
         """
-        
         return float(price_str.replace('\xa0€', '').replace(',', '.'))
 
-    def get_product_info(self, url):
+    def get_product_info(self, subcategory) -> tuple:
         """
-        Extracts product information from the given URL.
+        Extracts all products and their information from the given subcategory.
 
         Args:
-            url (str): URL of the category page.
+            subcategory (str): Name of the subcategory.
 
-        Returns:
-            tuple: Tuple of lists containing the names, prices, and URLs of the products.
         """
-        # Get the parsed HTML content
-        category_page = self._parse_html(url, dynamic_content=False)
-        category_soup = self._get_soup(category_page)
+        if isinstance(subcategory, list):
+            raise ValueError("Please, select a single subcategory to avoid saturating the server.")
+                
+        # First, get the list of URLs
+        subcat_structure_list = self._extract_subcat_structure(subcategory)
+        url_list = [subcat_structure[-1] for subcat_structure in subcat_structure_list]
+        
+        # Initialize lists for product details we want to save
+        cat, subcat_1, subcat_2, subcat_3, subcat_4, product_names, product_prices, product_urls = [], [], [], [], [], [], [], []
+        
+        # Iterate through the URLs to get the product details
+        for i, url in enumerate(url_list):
+                        
+            # Get the parsed HTML content
+            subcategory_page = self._parse_html(url, dynamic_content=False)
+            subcategory_soup = self._get_soup(subcategory_page)         
 
-        # Initialize lists for product details
-        product_names, product_prices, product_urls = [], [], []
+            # Extract product details from each product card
+            for product in subcategory_soup.find_all("div", {'class': 'product-card-container'}):
+                
+                # Extract product name
+                product_name = product.find('a').get("aria-label", None)
 
-        # Extract product details from each product card
-        for product in category_soup.find_all("div", {'class': 'product-card-container'}):
+                # Extract product price
+                product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'})
+                product_price = self._convert_price(product_price.text) if product_price else np.nan
+
+                # Extract product URL
+                product_url = product.find('a').get('href', None)
+                product_url = self.base_url + product_url if product_url else None
+
+                # Append extracted details to lists
+                cat = subcat_structure_list[i][0]
+                subcat_1 = subcat_structure_list[i][1]
+                subcat_2 = subcat_structure_list[i][2]
+                subcat_3 = subcat_structure_list[i][3]
+                subcat_4 = subcat_structure_list[i][4]
+                product_names.append(product_name)
+                product_prices.append(product_price)
+                product_urls.append(product_url)
+        
+        # Save the product information to a CSV file
+        print(f"Extracted {len(product_names)} products from the {self.category}>{subcategory} subcategory.")
+        return self._save_csv((cat, subcat_1, subcat_2, subcat_3, subcat_4, product_names, product_prices, product_urls))
             
-            # Extract product name
-            product_name = product.find('a').get("aria-label", np.nan)
-
-            # Extract product price
-            product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'})
-            product_price = self._convert_price(product_price.text) if product_price else np.nan
-
-            # Extract product URL
-            product_url = product.find('a').get('href', None)
-            product_url = self.base_url + product_url if product_url else np.nan
-
-            # Append extracted details to lists
-            product_names.append(product_name)
-            product_prices.append(product_price)
-            product_urls.append(product_url)
-
-        return product_names, product_prices, product_urls
+    def _save_csv(self, product_info):
+        """
+        Saves the product information to a CSV file.
+        
+        Args:
+            product_info (tuple): Tuple containing the product information.
+        """
+        
+        # Create a DataFrame from the product information
+        product_df = pd.DataFrame({
+            'Category': product_info[0],
+            'Subcategory_1': product_info[1],
+            'Subcategory_2': product_info[2],
+            'Subcategory_3': product_info[3],
+            'Subcategory_4': product_info[4],
+            'Product Name': product_info[5],
+            'Price': product_info[6],
+            'URL': product_info[7]
+        })
+        
+        # Create the filename based on the category + subcategory_1 + timestamp
+        # Example: Frescos_Carns_20210901_120000.csv
+        
+        # First, check that category and subcategory_1 do not contain spaces and special characters
+        category = product_info[0].replace(' ', '_').replace('/', '_')
+        subcategory_1 = product_info[1].replace(' ', '_').replace('/', '_')
+        # Remove special characters
+        category = unicodedata.normalize('NFKD', category).encode('ascii', 'ignore').decode('utf-8')
+        subcategory_1 = unicodedata.normalize('NFKD', subcategory_1).encode('ascii', 'ignore').decode('utf-8')
+        
+        # Get the current timestamp
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        
+        # Create the filename
+        filename = Path(__file__).parent.parent / "data" / f"{category}_{subcategory_1}_{timestamp}.csv"
+        
+        # Save the DataFrame to a CSV file
+        product_df.to_csv(filename, index=False)
+        
+        print(f"Product information saved to {filename}.")
+        
+        return product_df
