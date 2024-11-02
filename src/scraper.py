@@ -19,8 +19,12 @@ class BonpreuScraper():
         "Làctics i ous", "Celler"
         ]
     
-    def __init__(self, base_url, categories=None):
+    def __init__(self, base_url, category):
         self.base_url = base_url
+        if not category or category not in self.default_categories:
+            raise ValueError("Category not found. Use BonpreuScraper.categories() to get the available categories.")
+        else:
+            self.category = category
               
     @classmethod
     def categories(cls):
@@ -201,18 +205,13 @@ class BonpreuScraper():
         
         return clean_dict
     
-    def get_categories_url(self, categories=None) -> str:
+    def get_categories_url(self) -> str:
         """
         Extracts categories and their URLs from the categories menu.
 
         Returns:
             list: A list of tuples containing category names and their nested subcategories.
         """
-        if not categories:
-            raise ValueError("Categories must be provided. Use BonpreuScraper.categories() to get the default categories.")
-        elif not isinstance(categories, list):
-            categories = [categories]
-            
         try:
             # Get the URL of the categories section
             self.categories_url = self._get_categories_section_url()
@@ -229,7 +228,7 @@ class BonpreuScraper():
             self.categories_dict = {}
             for category in self.categories_menu.find_all('a'):
                 # Filter the categories to scrape
-                if category.text not in categories:
+                if category.text != self.category:
                     continue
                 # Get the category name and its URL
                 category_name = category.text
@@ -249,6 +248,8 @@ class BonpreuScraper():
         except Exception as e:
             print(f"Error occurred while getting the categories: {e}")
             return
+
+
 
     def extract_nested_values(self, d):
         """
