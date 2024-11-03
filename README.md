@@ -13,7 +13,7 @@ El producto final de este proyecto se almacena en la carpeta [data](/data) en fo
 
 Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipología y Ciclo de Vida de los Datos del Máster de Data Science de la UOC.
 
-## Estructura de la carpeta
+## Estructura del repositorio
 
 - 📂 [**data**](/data): Carpeta con datos obtenidos de la práctica.
   - 📄[**Frescos_20241103_133305.csv**](/data/Frescos_20241103_133305.csv): Dataset resultante de ejecutar el programa.
@@ -22,7 +22,7 @@ Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipolog�
 - 📂 [**src**](/src): Carpeta con el código fuente.
   - 📄[**main.py**](/src/main.py): Script principal para ejecutar el scraper.
   - 📄[**scraper.py**](/src/scraper.py): Define la clase ``BonpreuScraper`` con las funciones principales de scraping.
-- 📂 [**tests**](/tests): Tests automatizados.
+- 📂 [**tests**](/tests): Pruebas automatizados.
   - 📄[**test_scraper.py**](/tests/test_scraper.py): Script que contiene varias pruebas unitarias del scraper. 
 - 📄 **environment.yml**: Archivo YML para instalar un environment de Anaconda igual que el usado para el desarrollo del proyecto.
 - 🖼️ **imagen.png**: Imagen que contiene el logo de BonpreuEsclat.
@@ -40,14 +40,14 @@ Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipolog�
    Este environment ya tiene especificada tanto la versión de Python utilizada, como las librerías de las que depende. De esta forma, puedes saltarte el siguiente paso. 
    <br>
 
-1. Si no usas Anaconda y/o no tienes instaladas las librerías usadas en el programa:
+1. Si no usas Anaconda y/o no tienes instaladas las librerías usadas en el programa, usa:
       ``` bash
       pip install -r requirements.txt
       ```
 
 ## Cómo ejecutar el proyecto?
 
-El proyecto se ejecuta desde el script principal (``main.py``) desde consola. A continuación, se detallan las opciones de ejecución disponibles.
+El proyecto se ejecuta desde el script principal (``main.py``) a través de consola. A continuación, se detallan las opciones de ejecución disponibles.
 
 ### 0.1. Listar las categorías disponibles
 
@@ -56,14 +56,17 @@ Para ver todas las categorías que se pueden seleccionar, utiliza el siguiente c
 ```bash
 python main.py --list-categories
 ```
-Este comando solo muestra las categorías disponibles.
+Este comando **solo muestra las categorías disponibles**.
 
-### 0.2. Listar las categorías disponibles
+### 0.2. Listar las subcategorías disponibles
 
 ```bash
 python main.py --category <NOMBRE_CATEGORÍA> --list-subcategories
 ```
-Este comando solo muestra las subcategorías disponibles de una categoría dada.
+Este comando **solo muestra las subcategorías disponibles** de una categoría dada.
+
+> [!IMPORTANT]
+> Para conocer qué subcategorías hay disponibles, es necesario proporcionar una única categoría. También devolverá error si se usa la opción de "todas las categorías" (--category all).
 
 ### 1. Ejecutar el scraper en una categoría completa
 
