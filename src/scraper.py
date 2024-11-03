@@ -6,6 +6,7 @@ import unicodedata
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from itertools import chain
 
 class BonpreuScraper():
     """
@@ -179,13 +180,13 @@ class BonpreuScraper():
             'class': 'sc-1wz1hmv-0 cmTtoc'
         })
         # Filter the categories menu to get the desired category
-        category = [cat for cat in categories_menu.find_all('a') if cat.text == self.category][0]
+        self.category_tag = [cat for cat in categories_menu.find_all('a') if cat.text == self.category][0]
         # Get the html content of the subcategory page
-        subcat_page = self._parse_html(self.base_url + category["href"], dynamic_content=False)
+        self.subcat_page = self._parse_html(self.base_url + self.category_tag["href"], dynamic_content=False)
         # Get the soup of the subcategory page
-        subcat_soup = self._get_soup(subcat_page)
+        self.subcat_soup = self._get_soup(self.subcat_page)
         # Get the div tag containing the subcategories menu
-        self.subcat_menu = subcat_soup.find('div', {
+        self.subcat_menu = self.subcat_soup.find('div', {
         'class': 'sc-1wz1hmv-0 cmTtoc'
         })
         
@@ -225,7 +226,7 @@ class BonpreuScraper():
             ]
         
         Args:
-            subcategory (str): Name of the subcategory.
+            subcategory (str): If provided, extracts the subcategories of the given subcategory. Otherwise, extracts all the subcategories of the category.
         
         Returns:
             list: List of URLs of the subcategories.
@@ -233,38 +234,47 @@ class BonpreuScraper():
         # Set the first two levels of the hierarchy
         # Level 0 and level 1 are the category and subcategory, respectively defined by the user
         level_0_text = self.category
-        level_1_text = subcategory
-
-        # Get the level_1 subcategory object
-        level_1_subcat = [subcat for subcat in self.subcat_menu() if subcat.text == level_1_text][0]
-        level_1_url = self.base_url + level_1_subcat.find('a')['href']
-
+        
         # Initialize the list to store the subcategories
         subcat_list = []
-
-        # Extract the subcategories of level 2
-        level_2_subcats = self._extract_subcategory_links(level_1_url)
-
-        for level_2_text, url_2 in level_2_subcats:
-            # Extract the subcategories of level 3
-            level_3_subcats = self._extract_subcategory_links(url_2)
-
-            if level_3_subcats: # If there are subcategories of level 3
-                
-                for level_3_text, url_3 in level_3_subcats:
-                    # Extract the subcategories of level 4
-                    level_4_subcats = self._extract_subcategory_links(url_3)
-
-                    if level_4_subcats: # If there are subcategories of level 4
-                        
-                        for level_4_text, url_4 in level_4_subcats:
-                            subcat_list.append([level_0_text, level_1_text, level_2_text, level_3_text, level_4_text, url_4])
-                    
-                    else: # Without level 4
-                        subcat_list.append([level_0_text, level_1_text, level_2_text, level_3_text, None, url_3])
+        
+        # Extract the subcategories of level 1
+        level_1_subcats = self._extract_subcategory_links(self.base_url + self.category_tag["href"])
+        
+        for level_1_text, url_1 in level_1_subcats:
             
-            else: # Without level 3
-                subcat_list.append([level_0_text, level_1_text, level_2_text, None, None, url_2])
+            # Check if the subcategory is the one we are looking for
+            if subcategory != level_1_text:
+                continue
+
+            # Extract the subcategories of level 2
+            level_2_subcats = self._extract_subcategory_links(url_1)
+            
+            if level_2_subcats: # If there are subcategories of level 2
+
+                for level_2_text, url_2 in level_2_subcats:
+                    # Extract the subcategories of level 3
+                    level_3_subcats = self._extract_subcategory_links(url_2)
+
+                    if level_3_subcats: # If there are subcategories of level 3
+                        
+                        for level_3_text, url_3 in level_3_subcats:
+                            # Extract the subcategories of level 4
+                            level_4_subcats = self._extract_subcategory_links(url_3)
+
+                            if level_4_subcats: # If there are subcategories of level 4
+                                
+                                for level_4_text, url_4 in level_4_subcats:
+                                    subcat_list.append([level_0_text, level_1_text, level_2_text, level_3_text, level_4_text, url_4])
+                            
+                            else: # Without level 4
+                                subcat_list.append([level_0_text, level_1_text, level_2_text, level_3_text, None, url_3])
+                    
+                    else: # Without level 3
+                        subcat_list.append([level_0_text, level_1_text, level_2_text, None, None, url_2])
+            
+            else: # Without level 2
+                subcat_list.append([level_0_text, level_1_text, None, None, None, url_1])
         
         return subcat_list
         
@@ -293,20 +303,25 @@ class BonpreuScraper():
         
         return unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8') if text else None
     
-    def get_product_info(self, subcategory) -> tuple:
+    def get_product_info(self, subcategories = None) -> tuple:
         """
         Extracts all products and their information from the given subcategory.
 
         Args:
-            subcategory (str): Name of the subcategory.
+            subcategories (str | list): Name of the subcategory(es). If None, extracts all the products from the category.
 
         """
-        if isinstance(subcategory, list):
-            raise ValueError("Please, select a single subcategory to avoid saturating the server.")
+        if isinstance(subcategories, str):
+            # Convert the string to a list
+            subcategories = [subcategories]
+        elif not subcategories:
+            # Get all the subcategories
+            subcategories = self.get_subcategories_names()
         
-        print(f"Extracting products from the {self.category}>{subcategory} subcategory...")
         # First, get the list of URLs
-        subcat_structure_list = self._extract_subcat_structure(subcategory)
+        subcat_structure_list = [self._extract_subcat_structure(s) for s in subcategories]
+        # Flatten the list of lists
+        subcat_structure_list = list(chain(*subcat_structure_list))
         url_list = [subcat_structure[-1] for subcat_structure in subcat_structure_list]
         
         # Initialize a dict to store the product information
@@ -325,6 +340,8 @@ class BonpreuScraper():
                 
         # Iterate through the URLs to get the product details
         for i, url in enumerate(url_list):
+            
+            print(f"Extracting products from from the {self.category}>{subcat_structure_list[i][1]}...")
                         
             # Get the parsed HTML content
             subcategory_page = self._parse_html(url, dynamic_content=False)
@@ -361,7 +378,7 @@ class BonpreuScraper():
                 data['URL'].append(product_url)
         
         # Save the product information to a CSV file
-        print(f"Extracted {len(data['Product Name'])} products from the {self.category}>{subcategory} subcategory.")
+        print(f"Extracted {len(data['Product Name'])} products from the {self.category} and {subcategories} subcategories.")
         return self._save_csv(data)
             
     def _save_csv(self, product_info):
@@ -375,22 +392,20 @@ class BonpreuScraper():
         # Create a DataFrame from the product information
         product_df = pd.DataFrame(product_info)
         
-        # Create the filename based on the category + subcategory_1 + timestamp
-        # Example: Frescos_Carns_20210901_120000.csv
+        # Create the filename based on the category + timestamp
+        # Example: Frescos_20210901_120000.csv
         
         # First, check that category and subcategory_1 do not contain spaces and special characters
         category = product_df['Category'][0].replace(' ', '_')
-        subcategory_1 = product_df['Subcategory_1'][0].replace(' ', '_')
         
         # Remove special characters
         category = self._normalize_text(category)
-        subcategory_1 = self._normalize_text(subcategory_1)
         
         # Get the current timestamp
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         
         # Create the filename
-        filename = Path(__file__).parent.parent / "data" / f"{category}_{subcategory_1}_{timestamp}.csv"
+        filename = Path(__file__).parent.parent / "data" / f"{category}_{timestamp}.csv"
         
         # Save the DataFrame to a CSV file
         product_df.to_csv(filename, index=False)
