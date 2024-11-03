@@ -2,12 +2,20 @@
 
 ## Descripción del repositorio
 
+Este repositorio contiene el código para realizar _web scraping_ sobre la empresa de alimentación BonpreuEsclat.
+
+![alt text](image.png){: style="width:30%"}
+
+El producto final de este proyecto se almacena en la carpeta "data" en formato CSV, que incluye información detallada sobre los productos en venta. Para obtener más información sobre el enfoque metodológico utilizado, la estructura del conjunto de datos resultante y otros detalles relevantes, consulta la documentación disponible en la carpeta "docs".
+
+Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipología y Ciclo de Vida de los Datos del Máster de Data Science de la UOC.
+
 ## Estructura de la carpeta
 
-- 📂 **data**: Los datos obtenidos de la práctica.
-- 📂 **docs**: Archivos de documentación.
-- 📂 **src**: Código fuente.
-- 📂 **tests**: Tests automatizados.
+- 📂 [**data**]("data/"): Los datos obtenidos de la práctica.
+- 📂 **[docs]()**: Archivos de documentación.
+- 📂 **[src]()**: Código fuente.
+- 📂 **[tests]()**: Tests automatizados.
 - 📄 **environment.yml**: Archivo YML para instalar un environment de Anaconda igual que el usado para el desarrollo del proyecto.
 - 📄 **LICENSE**: Archivo de licencia.
 - 📄 **requirements.txt**: Un archivo de requirements donde se detallan las librerías utilizadas con sus respectivas versiones.
