@@ -37,14 +37,14 @@ El proyecto se ejecuta desde el script principal (``main.py``) desde consola. A 
 Para ver todas las categorías que se pueden seleccionar, utiliza el siguiente comando:
 
 ```bash
-python3 main.py --list-categories
+python main.py --list-categories
 ```
 Este comando solo muestra las categorías disponibles.
 
 ### 0.2. Listar las categorías disponibles
 
 ```bash
-python3 main.py --category <NOMBRE_CATEGORÍA> --list-subcategories
+python main.py --category <NOMBRE_CATEGORÍA> --list-subcategories
 ```
 Este comando solo muestra las subcategorías disponibles de una categoría dada.
 
