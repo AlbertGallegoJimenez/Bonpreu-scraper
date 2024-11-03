@@ -8,7 +8,8 @@ Este repositorio contiene el código para realizar _web scraping_ sobre la empre
       <img src="image.png" width="50%">
 </div>
 
-El producto final de este proyecto se almacena en la carpeta [data](/data) en formato CSV, que incluye información detallada sobre los productos en venta. Para obtener más información sobre el enfoque metodológico utilizado, la estructura del conjunto de datos resultante y otros detalles relevantes, consulta la documentación disponible en la carpeta [docs](/docs).
+El producto final de este proyecto se almacena en la carpeta [data](/data) en formato CSV, que incluye información detallada sobre los productos en venta.
+<br>Para obtener más información sobre el enfoque metodológico utilizado, la estructura del conjunto de datos resultante y otros detalles relevantes, consulta la documentación disponible en la carpeta [docs](/docs).
 
 Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipología y Ciclo de Vida de los Datos del Máster de Data Science de la UOC.
 
