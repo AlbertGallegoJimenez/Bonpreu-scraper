@@ -313,6 +313,7 @@ class BonpreuScraper():
             'Subcategory_3': [],
             'Subcategory_4': [],
             'Product Name': [],
+            'Date': [],
             'Price': [],
             'Quantity (kg|L)': [],
             'URL': []
@@ -349,6 +350,7 @@ class BonpreuScraper():
                 data['Subcategory_2'].append(self._normalize_text(subcat_structure_list[i][2]))
                 data['Subcategory_3'].append(self._normalize_text(subcat_structure_list[i][3]))
                 data['Subcategory_4'].append(self._normalize_text(subcat_structure_list[i][4]))
+                data['Date'].append(time.strftime("%Y%m%d"))
                 data['Product Name'].append(self._normalize_text(product_name))
                 data['Price'].append(product_price)
                 data['Quantity (kg|L)'].append(product_quantity)
