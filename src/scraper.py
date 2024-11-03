@@ -218,7 +218,11 @@ class BonpreuScraper():
                 category, subcategory_1, subcategory_2, subcategory_3, subcategory_4, url, 
                 ...
             ]
-        When a subcategory does not have subcategories, the list will contain None until the URL.
+        When a subcategory does not have any subcategory level, the list will be filled with None until the URL.
+        E.g.:
+            [
+                'Frescos', 'Fruites i verdures', 'De temporada', 'Fruita', None, 'https://www.compraonline.bonpreuesclat.cat/...'
+            ]
         
         Args:
             subcategory (str): Name of the subcategory.
