@@ -1,4 +1,4 @@
-# web-scraping-pr1
+# Bonpreu-scraper
 
 ## Descripción del repositorio
 
