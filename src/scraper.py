@@ -3,7 +3,6 @@ import requests
 from selenium import webdriver
 import time
 import unicodedata
-import numpy as np
 import pandas as pd
 from pathlib import Path
 from itertools import chain
@@ -355,7 +354,7 @@ class BonpreuScraper():
 
                 # Extract product price
                 product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'})
-                product_price = self._convert_price(product_price.text) if product_price else np.nan
+                product_price = self._convert_price(product_price.text) if product_price else None
                 
                 # Extract product quantity
                 product_quantity = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1sjeki5-0 asqfi'})
