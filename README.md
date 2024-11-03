@@ -2,7 +2,7 @@
 
 ## Descripción del repositorio
 
-Este repositorio contiene el código para realizar _web scraping_ sobre la empresa de alimentación BonpreuEsclat.
+Este repositorio contiene el código para realizar _web scraping_ para obtener datos de productos a la venta en la empresa de alimentación BonpreuEsclat.
 
 <div align="center">
       <img src="image.png" width="50%">
@@ -15,11 +15,17 @@ Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipolog�
 
 ## Estructura de la carpeta
 
-- 📂 [**data**](/data): Los datos obtenidos de la práctica.
-- 📂 [**docs**](/docs): Archivos de documentación.
-- 📂 [**src**](/src): Código fuente.
+- 📂 [**data**](/data): Carpeta con datos obtenidos de la práctica.
+  - 📄[**Frescos_20241103_133305.csv**](/data/Frescos_20241103_133305.csv): Dataset resultante de ejecutar el programa.
+- 📂 [**docs**](/docs): Carpeta con archivos de documentación.
+  - 📝[**PR1_Memoria_Roldan_Gallego.pdf**](/src/main.py): Memoria de la práctica.
+- 📂 [**src**](/src): Carpeta con el código fuente.
+  - 📄[**main.py**](/src/main.py): Script principal para ejecutar el scraper.
+  - 📄[**scraper.py**](/src/scraper.py): Define la clase ``BonpreuScraper`` con las funciones principales de scraping.
 - 📂 [**tests**](/tests): Tests automatizados.
+  - 📄[**test_scraper.py**](/tests/test_scraper.py): Script que contiene varias pruebas unitarias del scraper. 
 - 📄 **environment.yml**: Archivo YML para instalar un environment de Anaconda igual que el usado para el desarrollo del proyecto.
+- 🖼️ **imagen.png**: Imagen que contiene el logo de BonpreuEsclat.
 - 📄 **LICENSE**: Archivo de licencia.
 - 📄 **requirements.txt**: Un archivo de requirements donde se detallan las librerías utilizadas con sus respectivas versiones.
 - 📄 **README.md**: Este mismo archivo README.
@@ -100,6 +106,9 @@ Este comando ejecutará el scraper en todas las categorías y sus subcategorías
 > [!CAUTION]
 >Si seleccionas la opción de "todas las categorías" (`--category all`), utiliza el programa de forma responsable. Aunque el código implementa medidas para evitar la sobrecarga del servidor (como tiempos de espera), es importante moderar el uso para no saturar los recursos del sitio web de Bonpreu.
 
+## DOI del dataset generado
+
+_Aquí el enlace al DOI. Añadir también un badge._
 
 ## Colaboradores
 Este repositorio ha sido desarrollado por:
