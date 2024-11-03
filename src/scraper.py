@@ -231,6 +231,7 @@ class BonpreuScraper():
         Returns:
             list: List of URLs of the subcategories.
         """
+        print(f"Extracting subcategory structure for the {self.category} category...")
         # Set the first two levels of the hierarchy
         # Level 0 and level 1 are the category and subcategory, respectively defined by the user
         level_0_text = self.category
@@ -341,7 +342,7 @@ class BonpreuScraper():
         # Iterate through the URLs to get the product details
         for i, url in enumerate(url_list):
             
-            print(f"Extracting products from from the {self.category}>{subcat_structure_list[i][1]}...")
+            print(f"Extracting products from the {self.category} category ({i + 1}/{len(url_list)})...")
                         
             # Get the parsed HTML content
             subcategory_page = self._parse_html(url, dynamic_content=False)
