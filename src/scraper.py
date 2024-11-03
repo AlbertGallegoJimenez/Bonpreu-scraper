@@ -168,7 +168,6 @@ class BonpreuScraper():
         Returns:
             list: List containing the subcategories.
         """
-        print(f"Getting subcategories for the {self.category} category...")
         # Get the URL of the categories section
         categories_url = self._get_categories_section_url()
         # Get the page content of the categories section
@@ -231,7 +230,7 @@ class BonpreuScraper():
         Returns:
             list: List of URLs of the subcategories.
         """
-        print(f"Extracting subcategory structure for the {self.category} category...")
+        print(f"Extracting subcategory structure for the {self.category} > {subcategory}...")
         # Set the first two levels of the hierarchy
         # Level 0 and level 1 are the category and subcategory, respectively defined by the user
         level_0_text = self.category
