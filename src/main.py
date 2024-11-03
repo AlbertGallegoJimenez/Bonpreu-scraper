@@ -15,9 +15,18 @@ def main():
                         help='Specify the category to scrape or "all" for all categories.')
     parser.add_argument('--subcategories', type=str, nargs='*',
                         help='Specify subcategories to scrape (optional, only applies to single categories).')
+    parser.add_argument('--list-categories', action='store_true',
+                            help='List available categories and exit.')
     parser.add_argument('--list-subcategories', action='store_true',
                         help='List available subcategories for the selected category and exit.')
     args = parser.parse_args()
+    
+    # List categories if requested
+    if args.list_categories:
+        print("Available categories:")
+        for category in all_categories:
+            print(f"- {category}")
+        return  # Exit after listing categories
     
     # Check category selection
     if args.category == "all":
