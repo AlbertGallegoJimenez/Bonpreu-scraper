@@ -13,28 +13,82 @@
 - 📄 **requirements.txt**: Un archivo de requirements donde se detallan las librerías utilizadas con sus respectivas versiones.
 - 📄 **README.md**: Este mismo archivo README.
 
-## Cómo ejecutar el proyecto?
+## Instalación
 
 0. Si usas [Anaconda](https://www.anaconda.com/) puedes crear un **environment** directamente desde el archivo **environment.yml** de la siguiente forma:
       ``` bash
       conda env create --file environment.yml
       conda activate web_scraping_env
       ```
-   Este environment ya tiene especificada tanto la versión de Python utilizada, como las librerías de las que depende. De esta forma, puedes saltarte el siguiente paso e **ir directamente al 2**. 
-
+   Este environment ya tiene especificada tanto la versión de Python utilizada, como las librerías de las que depende. De esta forma, puedes saltarte el siguiente paso. 
+   <br>
 
 1. Si no usas Anaconda y/o no tienes instaladas las librerías usadas en el programa:
       ``` bash
       pip install -r requirements.txt
       ```
-   
-2. Ejecutar el **script principal desde consola**(``main.py``):
-      ``` bash
-      cd src
-      python3 main.py
-      ```
-> [!WARNING]
-> Si usas Windows reemplaza "python3" por "python".
+
+## Cómo ejecutar el proyecto?
+
+El proyecto se ejecuta desde el script principal (``main.py``) desde consola. A continuación, se detallan las opciones de ejecución disponibles.
+
+### 0.1. Listar las categorías disponibles
+
+Para ver todas las categorías que se pueden seleccionar, utiliza el siguiente comando:
+
+```bash
+python3 main.py --list-categories
+```
+Este comando solo muestra las categorías disponibles.
+
+### 0.2. Listar las categorías disponibles
+
+```bash
+python3 main.py --category <NOMBRE_CATEGORÍA> --list-subcategories
+```
+Este comando solo muestra las subcategorías disponibles de una categoría dada.
+
+### 1. Ejecutar el scraper en una categoría completa
+
+Para ejecutar el scraper en una categoría completa (es decir, en todas sus subcategorías), usa:
+
+```bash
+python main.py --category <NOMBRE_CATEGORÍA>
+```
+
+Ejemplo:
+
+```bash
+python main.py --category Frescos
+```
+
+### 2. Ejecutar el scraper en subcategorías específicas
+
+Para ejecutar el scraper en subcategorías específicas, usa:
+
+```bash
+python main.py --category <NOMBRE_CATEGORÍA> --subcategories <SUBCATEGORÍA_1> <SUBCATEGORÍA_2>
+```
+
+Ejemplo:
+
+```bash
+python main.py --category Frescos --subcategories "Fruites i verdura" "Xarcuteria"
+```
+
+### 3. Ejecutar el scraper en todas las categorías
+
+Para ejecutar el scraper en todas las categorías disponible, usa:
+
+```bash
+python main.py --category all
+```
+
+Este comando ejecutará el scraper en todas las categorías y sus subcategorías.
+
+> [!CAUTION]
+>Si seleccionas la opción de "todas las categorías" (`--category all`), utiliza el programa de forma responsable. Aunque el código implementa medidas para evitar la sobrecarga del servidor (como tiempos de espera), es importante moderar el uso para no saturar los recursos del sitio web de Bonpreu.
+
 
 ## Colaboradores
 Este repositorio ha sido desarrollado por:
