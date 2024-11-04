@@ -60,6 +60,8 @@ Este comando **solo muestra las categorías disponibles**.
 
 ### 0.2. Listar las subcategorías disponibles
 
+Para ver todas las subcategorías que se pueden seleccionar de una categoría, utiliza el siguiente comando:
+
 ```bash
 python main.py --category <NOMBRE_CATEGORÍA> --list-subcategories
 ```
@@ -70,7 +72,7 @@ Este comando **solo muestra las subcategorías disponibles** de una categoría d
 
 ### 1. Ejecutar el scraper en una categoría completa
 
-Para ejecutar el scraper en una categoría completa (es decir, en todas sus subcategorías), usa:
+Para ejecutar el scraper en una **categoría completa** (es decir, en todas sus subcategorías), usa:
 
 ```bash
 python main.py --category <NOMBRE_CATEGORÍA>
@@ -84,7 +86,7 @@ python main.py --category Frescos
 
 ### 2. Ejecutar el scraper en subcategorías específicas
 
-Para ejecutar el scraper en subcategorías específicas, usa:
+Para ejecutar el scraper en **subcategorías específicas**, usa:
 
 ```bash
 python main.py --category <NOMBRE_CATEGORÍA> --subcategories <SUBCATEGORÍA_1> <SUBCATEGORÍA_2>
@@ -96,9 +98,11 @@ Ejemplo:
 python main.py --category Frescos --subcategories "Fruites i verdura" "Xarcuteria"
 ```
 
+De la misma forma también se pueden ejecutar **varias categorías a la vez**, aunque en este caso **no se podrán especificar subcategorías** específicas de cada cateogoría.
+
 ### 3. Ejecutar el scraper en todas las categorías
 
-Para ejecutar el scraper en todas las categorías disponible, usa:
+Para ejecutar el scraper en **todas las categorías** disponible, usa:
 
 ```bash
 python main.py --category all
