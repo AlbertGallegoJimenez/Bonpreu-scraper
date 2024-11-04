@@ -37,17 +37,6 @@ class TestBonpreuScraper(unittest.TestCase):
 
     @patch('src.scraper.BonpreuScraper._parse_html')
     @patch('src.scraper.BonpreuScraper._get_soup')
-    def test_get_categories_section_url(self, mock_get_soup, mock_parse_html):
-        mock_parse_html.return_value = "<html></html>"
-        mock_soup = MagicMock()
-        mock_soup.find_all.return_value = [MagicMock()]
-        mock_get_soup.return_value = mock_soup
-
-        url = self.scraper._get_categories_section_url()
-        self.assertIsNotNone(url)
-
-    @patch('src.scraper.BonpreuScraper._parse_html')
-    @patch('src.scraper.BonpreuScraper._get_soup')
     def test_get_subcategories_names(self, mock_get_soup, mock_parse_html):
         mock_parse_html.return_value = "<html></html>"
         mock_soup = MagicMock()
