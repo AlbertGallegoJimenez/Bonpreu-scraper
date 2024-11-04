@@ -22,6 +22,7 @@ Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipolog�
 - 📂 [**src**](/src): Carpeta con el código fuente.
   - 📄[**main.py**](/src/main.py): Script principal para ejecutar el scraper.
   - 📄[**scraper.py**](/src/scraper.py): Define la clase ``BonpreuScraper`` con las funciones principales de scraping.
+  - 📄[**merge_csv.py**](/src/merge_csv.py): Script que automatiza la fusión de los CSVs exportados por categorías en un solo archivo CSV llamado ``bonpreu_products_YYYYmmdd_HHMMSS.csv``.
 - 📂 [**tests**](/tests): Pruebas automatizados.
   - 📄[**test_scraper.py**](/tests/test_scraper.py): Script que contiene varias pruebas unitarias del scraper. 
 - 📄 **environment.yml**: Archivo YML para instalar un environment de Anaconda igual que el usado para el desarrollo del proyecto.
@@ -112,6 +113,16 @@ Este comando ejecutará el scraper en todas las categorías y sus subcategorías
 
 > [!CAUTION]
 >Si seleccionas la opción de "todas las categorías" (`--category all`), utiliza el programa de forma responsable. Aunque el código implementa medidas para evitar la sobrecarga del servidor (como tiempos de espera), es importante moderar el uso para no saturar los recursos del sitio web de Bonpreu.
+
+### 4. Fusionar CSVs exportados
+
+Para **fusionar varios CSVs** exportados por categorías en un solo archivo CSV, usa:
+
+```bash
+python merge_csv.py
+```
+
+Ten en cuenta que este script identifica **todos los CSVs** presentes en la carpeta [data](/data) (con excepción a posibles archivos fusionados anteriores) y junta todos los registros en un archivo resultante llamado ``bonpreu_products_YYYYmmdd_HHMMSS.csv``.
 
 ## DOI del dataset generado
 
