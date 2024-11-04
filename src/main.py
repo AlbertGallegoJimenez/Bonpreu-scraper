@@ -70,8 +70,9 @@ def main():
             print(f"Scraping selected subcategories: {selected_subcategories}")
             scraper.get_product_info(selected_subcategories)
         else:
-            # No subcategories specified, scrape all subcategories in the category
-            print("No specific subcategories provided. Scraping all available subcategories.")
+            if len(selected_categories) == 1:
+                # No subcategories specified, scrape all subcategories in the category
+                print("No specific subcategories provided. Scraping all available subcategories.")
             all_subcategories = scraper.get_subcategories_names()
             scraper.get_product_info(all_subcategories)
 
