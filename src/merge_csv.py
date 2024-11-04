@@ -9,7 +9,6 @@ def merge_csv():
     """
     # Get all csv files in the data directory
     data_dir = Path(__file__).parent.parent / "data"
-    
     files = [os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith('.csv') and not f.startswith('bonpreu_products_')]
 
     # Read all csv files and merge them
