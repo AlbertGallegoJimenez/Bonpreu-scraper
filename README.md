@@ -16,7 +16,7 @@ Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipolog�
 ## Estructura del repositorio
 
 - 📂 [**data**](/data): Carpeta con datos obtenidos de la práctica.
-  - 📄[**Frescos_20241103_133305.csv**](/data/Frescos_20241103_133305.csv): Dataset resultante de ejecutar el programa.
+  - 📄[**bonpreu_products_20241104_171940.csv**](/data/bonpreu_products_20241104_171940.csv): Dataset resultante de ejecutar el programa.
 - 📂 [**docs**](/docs): Carpeta con archivos de documentación.
   - 📝[**PR1_Memoria_Roldan_Gallego.pdf**](/src/main.py): Memoria de la práctica.
 - 📂 [**src**](/src): Carpeta con el código fuente.
