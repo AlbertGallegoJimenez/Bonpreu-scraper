@@ -128,10 +128,9 @@ Ten en cuenta que este script identifica **todos los CSVs** presentes en la carp
 
 ## DOI del dataset generado
 
-El dataset generado está publicado en [Zenodo](https://zenodo.org/) con el título: "".
+El dataset generado está publicado en [Zenodo](https://zenodo.org/) con el título: "Supermarket Product Prices Dataset".
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.14036298.svg.svg)](https://doi.org/10.5281/zenodo.14036298)
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14036298.svg)](https://doi.org/10.5281/zenodo.14036298)
 
 ## Colaboradores
 Este repositorio ha sido desarrollado por:
