@@ -11,7 +11,7 @@ def main():
     
     # Configure parser
     parser = argparse.ArgumentParser(description="Run the Bonpreu scraper.")
-    parser.add_argument('--categories', type=str, nargs='+', choices=all_categories + ["all"],
+    parser.add_argument('--category', type=str, nargs='+', choices=all_categories + ["all"],
                         help='Specify one or more categories to scrape or "all" for all categories.')
     parser.add_argument('--subcategories', type=str, nargs='*',
                         help='Specify subcategories to scrape (optional, only applies to single categories).')
