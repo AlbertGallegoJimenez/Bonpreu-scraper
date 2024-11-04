@@ -407,7 +407,7 @@ class BonpreuScraper():
         filename = Path(__file__).parent.parent / "data" / f"{category}_{timestamp}.csv"
         
         # Save the DataFrame to a CSV file
-        product_df.to_csv(filename, index=False)
+        product_df.to_csv(filename, index=False, encoding='utf-8')
         
         print(f"Product information saved to {filename}.")
         
