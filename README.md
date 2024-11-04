@@ -1,4 +1,6 @@
 # Bonpreu-scraper
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.14036298.svg.svg)](https://doi.org/10.5281/zenodo.14036298)
+
 
 ## Descripción del repositorio
 
@@ -126,7 +128,10 @@ Ten en cuenta que este script identifica **todos los CSVs** presentes en la carp
 
 ## DOI del dataset generado
 
-_Aquí el enlace al DOI. Añadir también un badge._
+El dataset generado está publicado en [Zenodo](https://zenodo.org/) con el título: "".
+
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.14036298.svg.svg)](https://doi.org/10.5281/zenodo.14036298)
+
 
 ## Colaboradores
 Este repositorio ha sido desarrollado por:
