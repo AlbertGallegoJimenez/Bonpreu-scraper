@@ -62,6 +62,7 @@ class BonpreuScraper():
                 options.add_argument("--headless")
                 options.add_argument("--disable-blink-features=AutomationControlled")
                 options.add_argument("disable-gpu")
+                options.add_argument("--blink-settings=imagesEnabled=false")  # Avoid images and other media types
                 # Sets the driver
                 driver = webdriver.Chrome(options=options)
                 # Opens the URL
@@ -95,7 +96,9 @@ class BonpreuScraper():
                     "User-Agent": user_agent,
                     "Accept-Language": "en-US,en;q=0.9",
                     "Accept-Encoding": "gzip, deflate, br",
-                    "Connection": "keep-alive"
+                    "Connection": "keep-alive",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",  # Avoid images and other media types
+                    "Accept-Encoding": "gzip, deflate"  # Enable compression to reduce response size
                 }
                 
                 # Use requests to get the page content
