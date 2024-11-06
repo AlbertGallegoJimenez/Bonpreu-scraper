@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import random
 import requests
 from selenium import webdriver
 import time
@@ -43,11 +44,21 @@ class BonpreuScraper():
         Returns:
             str: HTML content of the page.
         """
+        # Define a list of user agents to avoid being blocked
+        user_agent_list = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 11; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.181 Mobile Safari/537.36",
+        ]
+        # Randomly select a user agent from the list
+        user_agent = random.choice(user_agent_list)
+        
         try:
             if dynamic_content:
                 # Set the options for the Chrome driver
                 options = webdriver.ChromeOptions()
-                options.add_argument("--User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36")
+                options.add_argument(f"--User-Agent={user_agent}")
                 options.add_argument("--headless")
                 options.add_argument("--disable-blink-features=AutomationControlled")
                 options.add_argument("disable-gpu")
@@ -81,7 +92,7 @@ class BonpreuScraper():
             else:
                 # Define the headers to avoid being blocked
                 headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
+                    "User-Agent": user_agent,
                     "Accept-Language": "en-US,en;q=0.9",
                     "Accept-Encoding": "gzip, deflate, br",
                     "Connection": "keep-alive"
