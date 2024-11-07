@@ -8,6 +8,10 @@ import pandas as pd
 from pathlib import Path
 from itertools import chain
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+
 class BonpreuScraper():
     """
     A web scraper for the Bonpreu website to gather product prices and other relevant information.
@@ -67,6 +71,18 @@ class BonpreuScraper():
                 driver = webdriver.Chrome(options=options)
                 # Opens the URL
                 driver.get(url)
+
+                # Waiting popup
+                try:
+                    cookie_accept_button = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
+                    )
+                    # Click on Accept button
+                    cookie_accept_button.click()  
+                    print("Popup de cookies cerrado.")
+                except Exception as e:
+                    print("No se encontró el popup de cookies o ya estaba cerrado.")
+
                 # Get the height of the page
                 last_height = driver.execute_script("return document.body.scrollHeight")
                 
