@@ -4,7 +4,7 @@
 
 ## Descripción del repositorio
 
-Este repositorio contiene el código para realizar _web scraping_ para obtener datos de productos a la venta en la empresa de alimentación BonpreuEsclat.
+Este repositorio contiene el código para realizar _web scraping_ para obtener datos de productos a la venta en la empresa de alimentación [BonpreuEsclat](https://www.compraonline.bonpreuesclat.cat).
 
 <div align="center">
       <img src="image.png" width="50%">
