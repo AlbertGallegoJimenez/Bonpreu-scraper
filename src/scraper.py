@@ -329,7 +329,6 @@ class BonpreuScraper():
         Returns:
             str: Normalized text.
         """
-        
         return unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8') if text else None
     
     def get_product_info(self, subcategories = None) -> tuple:
@@ -373,26 +372,38 @@ class BonpreuScraper():
             print(f"Extracting products from the {self.category} category ({i + 1}/{len(url_list)})...")
                         
             # Get the parsed HTML content
-            subcategory_page = self._parse_html(url, dynamic_content=False)
+            subcategory_page = self._parse_html(url, dynamic_content=False) # Set to False for speed purposes
             subcategory_soup = self._get_soup(subcategory_page)         
 
             # Extract product details from each product card
             for product in subcategory_soup.find_all("div", {'class': 'product-card-container'}):
                 
                 # Extract product name
-                product_name = product.find('a').get("aria-label", None)
+                try:
+                    product_name = product.find('a').get("aria-label", None)
+                except AttributeError:
+                    product_name = None
 
                 # Extract product price
-                product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'})
-                product_price = self._convert_price(product_price.text) if product_price else None
+                try:
+                    product_price = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1fkdssq-0 bwsVzh'})
+                    product_price = self._convert_price(product_price.text) if product_price else None
+                except AttributeError:
+                    product_price = None
                 
                 # Extract product quantity
-                product_quantity = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1sjeki5-0 asqfi'})
-                product_quantity = product_quantity.text if product_quantity else None
+                try:
+                    product_quantity = product.find('span', {'class': '_text_16wi0_1 _text--m_16wi0_23 sc-1sjeki5-0 asqfi'})
+                    product_quantity = product_quantity.text if product_quantity else None
+                except AttributeError:
+                    product_quantity = None
 
                 # Extract product URL
-                product_url = product.find('a').get('href', None)
-                product_url = self.base_url + product_url if product_url else None
+                try:
+                    product_url = product.find('a').get('href', None)
+                    product_url = self.base_url + product_url if product_url else None
+                except AttributeError:
+                    product_url = None
 
                 # Append extracted details to lists
                 data['Category'].append(self._normalize_text(subcat_structure_list[i][0]))
