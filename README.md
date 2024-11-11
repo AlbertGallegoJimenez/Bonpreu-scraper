@@ -98,7 +98,7 @@ python main.py --category <NOMBRE_CATEGORÍA> --subcategories <SUBCATEGORÍA_1> 
 Ejemplo:
 
 ```bash
-python main.py --category Frescos --subcategories "Fruites i verdura" "Xarcuteria"
+python main.py --category Frescos --subcategories "Fruites i verdures" "Xarcuteria"
 ```
 
 De la misma forma también se pueden ejecutar **varias categorías a la vez**, aunque en este caso **no se podrán especificar subcategorías** específicas de cada cateogoría.
