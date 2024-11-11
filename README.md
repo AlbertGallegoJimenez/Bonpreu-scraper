@@ -20,7 +20,7 @@ Este proyecto se presenta como la Práctica 1 de la asignatura M2.851 - Tipolog�
 - 📂 [**data**](/data): Carpeta con datos obtenidos de la práctica.
   - 📄[**bonpreu_products_20241104_173704.csv**](/data/bonpreu_products_20241104_173704.csv): Dataset resultante de ejecutar el programa.
 - 📂 [**docs**](/docs): Carpeta con archivos de documentación.
-  - 📝[**PR1_Memoria_Roldan_Gallego.pdf**](/src/main.py): Memoria de la práctica.
+  - 📝[**PR1_Memoria_Roldan_Gallego.pdf**](/docs/PR1_Memoria_Roldan_Gallego.pdf): Memoria de la práctica.
 - 📂 [**src**](/src): Carpeta con el código fuente.
   - 📄[**main.py**](/src/main.py): Script principal para ejecutar el scraper.
   - 📄[**scraper.py**](/src/scraper.py): Define la clase ``BonpreuScraper`` con las funciones principales de scraping.
